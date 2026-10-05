@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculadora de Mortero - Obra</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#17202a}
+.wrap{max-width:620px;margin:auto;padding:16px}.card{background:#fff;border:1px solid #d9dee3;border-radius:14px;padding:18px;margin-bottom:14px}
+h1{font-size:22px;margin:0 0 6px}p{margin:5px 0;color:#566573}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+button{border:0;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer}.tab{background:#e9ecef;color:#17202a}.tab.on,.calc{background:#1565c0;color:white}
+label{display:block;font-size:14px;font-weight:700;margin:13px 0 5px}input,select{width:100%;padding:13px;border:1px solid #bcc5ce;border-radius:9px;background:white;font-size:16px}
+.calc{width:100%;margin-top:18px}.result{display:none;text-align:center;border:2px solid #1565c0}.big{font-size:56px;font-weight:800;margin:8px 0}.details{text-align:left;border-top:1px solid #ddd;padding-top:12px;line-height:1.55}
+.shot{margin-top:14px;padding:12px;border-radius:9px;background:#eef4fb;font-weight:700}.hidden{display:none}.error{color:#b00020;font-weight:700;margin-top:10px}
+small{display:block;margin-top:10px;color:#68737d}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="card">
+  <h1>Calculadora rápida de mortero</h1>
+  <p>Control de solicitud de bultos de 40 kg</p>
+  <div class="tabs">
+   <button id="pBtn" class="tab on">PAÑETE</button>
+   <button id="mBtn" class="tab">PEGA</button>
+  </div>
+  <label>Contratista</label>
+  <select id="contratista">
+   <option>Construcciones Garpa</option><option>Servimontajes</option>
+   <option>Mampostería Andis C.</option><option>Mampostería Andres R.</option><option>Remates</option>
+  </select>
+  <label>Frente / Edificio</label>
+  <select id="frente">
+   <option>Edificio PMC</option><option>Oficinas Taller Bodega</option><option>MOW</option>
+   <option>Subestación de Tracción</option><option>Subestación de Baja</option><option>Pantógrafo</option>
+   <option>Máquina de Lavado</option><option>Muro Track de prueba</option><option>Remates generales</option><option>Otros</option>
+  </select>
+  <label>Ubicación específica</label><input id="ubicacion" placeholder="Ej. baño piso 1, muro eje 4">
+  <label>Área a ejecutar (m²)</label><input id="area" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="Ej. 20">
+  <div id="panete">
+   <label>Espesor aproximado</label>
+   <select id="espesor">
+    <option value="1">1,0 cm</option><option value="1.1">1,1 cm</option><option value="1.2">1,2 cm</option>
+    <option value="1.3">1,3 cm</option><option value="1.4">1,4 cm</option><option value="1.5" selected>1,5 cm</option>
+    <option value="1.6">1,6 cm</option><option value="1.7">1,7 cm</option><option value="1.8">1,8 cm</option>
+    <option value="1.9">1,9 cm</option><option value="2">2,0 cm</option>
+   </select>
+  </div>
+  <div id="pega" class="hidden">
+   <label>Tipo de bloque</label>
+   <select id="bloque"><option value="2.5">Bloque 14 cm</option><option value="3.3">Bloque 19 cm</option></select>
+  </div>
+  <button id="calcular" class="calc">CALCULAR BULTOS</button>
+  <div id="error" class="error"></div>
+ </div>
+ <div id="resultado" class="card result">
+  <div>MORTERO RECOMENDADO</div><div id="numero" class="big">0</div><h2>BULTOS DE 40 kg</h2>
+  <div id="detalle" class="details"></div>
+  <div class="shot">📱 Tome captura de esta pantalla y envíela por WhatsApp</div>
+ </div>
+</div>
+<script>
+let actividad="Pañete";
+const q=x=>document.querySelector(x);
+q("#pBtn").onclick=()=>modo("Pañete"); q("#mBtn").onclick=()=>modo("Pega");
+function modo(x){actividad=x;let p=x==="Pañete";q("#panete").classList.toggle("hidden",!p);q("#pega").classList.toggle("hidden",p);q("#pBtn").classList.toggle("on",p);q("#mBtn").classList.toggle("on",!p);q("#resultado").style.display="none";}
+q("#calcular").onclick=()=>{
+ let a=Number(q("#area").value); if(!a||a<=0){q("#error").textContent="Ingrese el área a ejecutar.";return} q("#error").textContent="";
+ let r,desc;
+ if(actividad==="Pañete"){let e=Number(q("#espesor").value);r=1.39*1.5/e;desc="Espesor: "+e.toLocaleString("es-CO")+" cm";}
+ else{r=Number(q("#bloque").value);desc="Tipo: "+q("#bloque").selectedOptions[0].text;}
+ let exact=a/r, b=Math.ceil(exact);
+ q("#numero").textContent=b;
+ q("#detalle").innerHTML="<b>Actividad:</b> "+actividad+"<br><b>Contratista:</b> "+q("#contratista").value+"<br><b>Frente:</b> "+q("#frente").value+"<br><b>Ubicación:</b> "+(q("#ubicacion").value||"No especificada")+"<br><b>Área:</b> "+a.toLocaleString("es-CO",{minimumFractionDigits:2})+" m²<br><b>"+desc+"</b><br><b>Rendimiento:</b> "+r.toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2})+" m²/bulto<br><b>Cálculo:</b> "+exact.toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2})+" → <b>"+b+" bultos</b>";
+ q("#resultado").style.display="block";q("#resultado").scrollIntoView({behavior:"smooth"});
+};
+</script>
+</body>
+</html>
